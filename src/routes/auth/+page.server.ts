@@ -53,6 +53,7 @@ export const actions: Actions = {
             console.error(error)
             redirect(303, '/auth/error')
         } else if (data.url) {
+            console.log(data.url)
             redirect(303, data.url) // use the redirect API for your server framework
         }
     }
