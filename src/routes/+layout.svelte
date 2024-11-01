@@ -6,28 +6,37 @@
   $: ({ session, supabase } = data);
 
   onMount(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      async (_, newSession) => {
-        if (newSession?.expires_at !== session?.expires_at) {
-          const {
-            data: { user },
-            error,
-          } = await supabase.auth.getUser();
-          if (error) {
-            console.error("Error validating user:", error);
-            return;
-          }
-          if (user) {
-            invalidate("supabase:auth");
-          } else {
-            // Redirect to home
-            goto("/");
-          }
-        }
-      },
-    );
-    return () => subscription.subscription.unsubscribe();
+    const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+      if (newSession?.expires_at !== session?.expires_at) {
+        invalidate("supabase:auth");
+      }
+    });
+
+    return () => data.subscription.unsubscribe();
   });
+
+  $: logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error during logout:", error);
+    }
+    goto("/");
+  };
 </script>
+
+<header>
+  {#if session}
+    <nav>
+      <a href="/profile">Profile</a>
+      <button on:click={logout}>Logout</button>
+    </nav>
+  {:else}
+    <nav>
+      <form method="POST" action="/auth?/github">
+        <button>GitHub</button>
+      </form>
+    </nav>
+  {/if}
+</header>
 
 <slot />

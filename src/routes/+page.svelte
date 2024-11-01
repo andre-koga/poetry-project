@@ -9,5 +9,3 @@
     <li>{country.name}</li>
   {/each}
 </ul>
-
-<a href="/auth">auth!</a>
