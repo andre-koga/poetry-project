@@ -46,6 +46,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
     }
 
     if (event.locals.session && event.url.pathname === '/auth') {
+        console.log("redirecting to private!");
         redirect(303, '/private');
     }
 
