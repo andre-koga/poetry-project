@@ -1,6 +1,9 @@
 <script>
-  import { goto, invalidate } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
   import { onMount } from "svelte";
+  import "../style.css";
+  import Header from "$layout/Header.svelte";
+  import Footer from "$layout/Footer.svelte";
 
   export let data;
   $: ({ session, supabase } = data);
@@ -14,29 +17,8 @@
 
     return () => data.subscription.unsubscribe();
   });
-
-  $: logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error during logout:", error);
-    }
-    goto("/");
-  };
 </script>
 
-<header>
-  {#if session}
-    <nav>
-      <a href="/profile">Profile</a>
-      <button on:click={logout}>Logout</button>
-    </nav>
-  {:else}
-    <nav>
-      <form method="POST" action="/auth?/github">
-        <button>GitHub</button>
-      </form>
-    </nav>
-  {/if}
-</header>
-
+<Header {session} {supabase} />
 <slot />
+<Footer />
