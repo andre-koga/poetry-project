@@ -1,64 +1,86 @@
-function Formatter(original: string): string[] {
+function Formatter(document: Document, original: string): HTMLElement[] {
     const lines = original.split('\n');
-    console.log(lines);
 
-    let sections: string[] = [];
-    let currentSection: string = "";
+    let result: HTMLElement[] = [];
+    let currentSection: HTMLElement = document.createElement('section');
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // Check for section separator
-        if (line.trim() === '---') {
-            if (currentSection) {
-                sections.push(currentSection);
-                currentSection = "";
-            }
+        // if --- we want to create a new section in the result
+        if (line.trim() === "---") {
+            result.push(currentSection);
+            currentSection = document.createElement('section');
             continue;
         }
 
-        // Check for empty line
-        if (line.trim() === '') {
-            if (currentSection) {
-                currentSection += '<p>&nbsp;</p>';
-            }
+        // if the line is empty, we have a break
+        else if (line.trim() === "") {
+            currentSection.appendChild(document.createElement('br'));
             continue;
         }
 
-        // Check for h3
-        if (line.startsWith('### ')) {
-            currentSection += `<h3>${line.replace('###', '').trim()}</h3>`;
+        // if the line is a title
+        if (line.startsWith("# ")) {
+            const title = document.createElement('h1');
+            title.innerText = line.replace("#", "").trim();
+            currentSection.appendChild(title);
             continue;
         }
-        // Check for h2
-        if (line.startsWith('## ')) {
-            currentSection += `<h2>${line.replace('##', '').trim()}</h2>`;
+        else if (line.startsWith("## ")) {
+            const title = document.createElement('h2');
+            title.innerText = line.replace("##", "").trim();
+            currentSection.appendChild(title);
             continue;
         }
-        // Check for h1
-        if (line.startsWith('# ')) {
-            currentSection += `<h1>${line.replace('#', '').trim()}</h1>`;
+        else if (line.startsWith("### ")) {
+            const title = document.createElement('h3');
+            title.innerText = line.replace("###", "").trim();
+            currentSection.appendChild(title);
             continue;
         }
 
+        // if the line is a list
+        if (line.startsWith("- ")) {
+            const item = document.createElement('li');
+            item.innerText = line.replace("-", "").trim();
+            currentSection.appendChild(item);
+        }
 
+        // if bold, make only the text between the ** bold
+        if (line.includes("***")) {
+            const parts = line.split("***");
+            const bold = document.createElement('b');
+            const italic = document.createElement('i');
+            italic.innerText = parts[1];
+            bold.appendChild(italic);
+            currentSection.appendChild(bold);
+        }
+        else if (line.includes("**")) {
+            const parts = line.split("**");
+            const bold = document.createElement('b');
+            bold.innerText = parts[1];
+            currentSection.appendChild(bold);
+        }
+        else if (line.includes("*")) {
+            const parts = line.split("*");
+            const italic = document.createElement('i');
+            italic.innerText = parts[1];
+            currentSection.appendChild(italic);
+        }
 
-        // Apply bold syntax (**text**)
-        let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-        // Apply italic syntax (*text*)
-        processedLine = processedLine.replace(/\*(.*?)\*/g, '<i>$1</i>');
-
-        // Add the processed line to the current section
-        currentSection += `<p>${processedLine}</p>`;
+        // if it's a normal line
+        else {
+            const paragraph = document.createElement('p');
+            paragraph.innerText = line;
+            currentSection.appendChild(paragraph);
+        }
     }
 
-    // Add the last section to the sections array
-    if (currentSection) {
-        sections.push(currentSection);
-    }
+    // add the last section
+    result.push(currentSection);
 
-    return sections;
+    return result;
 }
 
 export default Formatter;
